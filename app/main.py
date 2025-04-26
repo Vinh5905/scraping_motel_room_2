@@ -75,7 +75,7 @@ def predict_anomaly(input_df, encoders, scaler, model, ward_avg_price_per_m2, di
         risk = "🚨 Bất thường rõ ràng"
         level = 3
 
-    all_data = pd.read_csv('/Users/hoangvinh/Library/CloudStorage/OneDrive-Personal/Workspace/scraping_motel_room_v2/EDA/final_data.csv')
+    all_data = pd.read_csv('./EDA/final_data.csv')
     data_same_place_district = all_data[
         (encoders['province_city'].transform(all_data['province_city']) ==  df['province_city'][0]) & 
         (encoders['district'].transform(all_data['district']) == df['district'][0])
