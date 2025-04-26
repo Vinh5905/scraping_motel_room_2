@@ -10,6 +10,9 @@ app = FastAPI()
 # --- Load model, scaler, encoder, ... đã train ---
 bundle = joblib.load('model_bundle.pkl')
 
+# All data
+all_data = pd.read_csv('./EDA/final_data.csv')
+
 # --- Định nghĩa schema dữ liệu đầu vào ---
 class InputData(BaseModel):
     price: float
@@ -17,6 +20,9 @@ class InputData(BaseModel):
     province_city: str
     district: str
     ward: str
+
+class DistrictData(BaseModel):
+    district: str
 
 # Func predict
 def predict_anomaly(input_df, encoders, scaler, model, ward_avg_price_per_m2, district_avg_price_per_m2):
@@ -75,7 +81,6 @@ def predict_anomaly(input_df, encoders, scaler, model, ward_avg_price_per_m2, di
         risk = "🚨 Bất thường rõ ràng"
         level = 3
 
-    all_data = pd.read_csv('./EDA/final_data.csv')
     data_same_place_district = all_data[
         (encoders['province_city'].transform(all_data['province_city']) ==  df['province_city'][0]) & 
         (encoders['district'].transform(all_data['district']) == df['district'][0])
@@ -109,3 +114,43 @@ def make_prediction(data: List[InputData]):
     result = predict_anomaly(df_input, **bundle)
 
     return {'prediction': result}
+
+
+@app.get("/all_districts")
+def get_districts():
+    all_districts = list(all_data['district'].unique())
+
+    return {
+        'data': {
+            'label': ['Quận', 'Huyện'],
+            'districts': all_districts
+        }
+    }
+
+
+@app.post("/all_wards_in_district")
+def get_all_wards_in_district(district: DistrictData):
+    district = district.model_dump()['district']
+
+    all_wards_in_district = list(all_data.loc[all_data['district'] == district, 'ward'].unique())
+
+    return {
+        'data': {
+            'district': {
+                'name': district,
+                'all_wards_in_district': all_wards_in_district
+            }
+        }
+    }
+
+
+@app.get("/all_wards")
+def get_wards():
+    all_wards = list(all_data['ward'].unique())
+
+    return {
+        'data': {
+            'label': ['Phường', 'Xã', 'Thị trấn'],
+            'wards': all_wards
+        }
+    }
