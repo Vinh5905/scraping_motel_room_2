@@ -11,7 +11,6 @@ scrapy-selenium
 fake-useragent
 PyAutoGUI
 webdriver-manager
-numpy
 pandas
 matplotlib
 scipy
@@ -20,3 +19,12 @@ seaborn
 pydantic
 fastapi
 uvicorn
+langchain
+langchain-together
+langchain-text-splitters
+langchain-community
+langgraph
+langchain_huggingface
+numpy==1.26.3
+faiss-cpu
+rank_bm25

@@ -3,3 +3,4 @@ Crawling and scraping/data
 Crawling and scraping/check_page_source
 test.py 
 .env
+vector_store.*
