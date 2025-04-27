@@ -11,15 +11,15 @@ import getpass
 import pickle
 import requests
 import zipfile
-from langchain.chat_models import init_chat_model
-from langchain_core.prompts import PromptTemplate
-from langchain_core.messages import SystemMessage, HumanMessage
+# from langchain.chat_models import init_chat_model
+# from langchain_core.prompts import PromptTemplate
+# from langchain_core.messages import SystemMessage, HumanMessage
 import dotenv
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
-from langchain_core.documents import Document
-from langchain_core.prompts import PromptTemplate
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+# from langchain_huggingface import HuggingFaceEmbeddings
+# from langchain_community.vectorstores import FAISS
+# from langchain_core.documents import Document
+# from langchain_core.prompts import PromptTemplate
+# from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 app = FastAPI()
 
@@ -29,42 +29,42 @@ bundle = joblib.load('model_bundle.pkl')
 # All data
 all_data = pd.read_csv('./EDA/final_data.csv')
 
-# Data text
-data_text = pd.read_csv('./RAG_langchain/data_text.csv')
+# # Data text
+# data_text = pd.read_csv('./RAG_langchain/data_text.csv')
 
-# LLM
-dotenv.load_dotenv()
-if "TOGETHER_API_KEY" not in os.environ or not os.environ["TOGETHER_API_KEY"]:
-    os.environ["TOGETHER_API_KEY"] = getpass("Nhập Together API Key: ")
-llm = init_chat_model("meta-llama/Llama-3.3-70B-Instruct-Turbo-Free", model_provider="together") 
+# # LLM
+# dotenv.load_dotenv()
+# if "TOGETHER_API_KEY" not in os.environ or not os.environ["TOGETHER_API_KEY"]:
+#     os.environ["TOGETHER_API_KEY"] = getpass("Nhập Together API Key: ")
+# llm = init_chat_model("meta-llama/Llama-3.3-70B-Instruct-Turbo-Free", model_provider="together") 
 
-# Prompt Template
-system_prompt = """Bạn là một trợ lý tìm kiếm bất động sản.
-Sử dụng thông tin dưới đây (dạng JSON) để trả lời câu hỏi ngắn gọn dưới 3 câu.
-Nếu có thể, tạo một list ID các mã như ["id1", "id2", ...].
-Nếu không tìm thấy thông tin liên quan, hãy trả lời [].
+# # Prompt Template
+# system_prompt = """Bạn là một trợ lý tìm kiếm bất động sản.
+# Sử dụng thông tin dưới đây (dạng JSON) để trả lời câu hỏi ngắn gọn dưới 3 câu.
+# Nếu có thể, tạo một list ID các mã như ["id1", "id2", ...].
+# Nếu không tìm thấy thông tin liên quan, hãy trả lời [].
 
-Thông tin:\n{retrieved_text}"""
+# Thông tin:\n{retrieved_text}"""
 
-custom_rag_prompt = PromptTemplate.from_template(system_prompt)
+# custom_rag_prompt = PromptTemplate.from_template(system_prompt)
 
-def download_vectorstore():
-    if not os.path.exists("vector_store.pkl"):
-        print("Downloading vectorstore.pkl...")
-        url = "https://huggingface.co/spaces/KevinPhamH/my-vectorstore/resolve/main/vector_store.pkl"
-        response = requests.get(url)
+# def download_vectorstore():
+#     if not os.path.exists("vector_store.pkl"):
+#         print("Downloading vectorstore.pkl...")
+#         url = "https://huggingface.co/spaces/KevinPhamH/my-vectorstore/resolve/main/vector_store.pkl"
+#         response = requests.get(url)
         
-        with open("vector_store.pkl", "wb") as f:
-            f.write(response.content)
+#         with open("vector_store.pkl", "wb") as f:
+#             f.write(response.content)
         
-        print("Download completed.")
-    else:
-        print("vectorstore.pkl already exists.")
+#         print("Download completed.")
+#     else:
+#         print("vectorstore.pkl already exists.")
 
-download_vectorstore()
+# download_vectorstore()
 
-with open("vector_store.pkl", 'rb') as f:
-    vector_store = pickle.load(f)
+# with open("vector_store.pkl", 'rb') as f:
+#     vector_store = pickle.load(f)
 
 # --- Định nghĩa schema dữ liệu đầu vào ---
 class InputData(BaseModel):
@@ -77,8 +77,8 @@ class InputData(BaseModel):
 class DistrictData(BaseModel):
     district: str
 
-class SearchData(BaseModel):
-    query: str
+# class SearchData(BaseModel):
+#     query: str
 
 # Func predict
 def predict_anomaly(input_df, encoders, scaler, model, ward_avg_price_per_m2, district_avg_price_per_m2):
@@ -211,29 +211,29 @@ def get_wards():
         }
     }
     
-@app.post("/search_smart")
-def search_smart(query: SearchData):
-    query = query.model_dump()['query']
+# @app.post("/search_smart")
+# def search_smart(query: SearchData):
+#     query = query.model_dump()['query']
 
-    results = vector_store.similarity_search(query, k=20)
+#     results = vector_store.similarity_search(query, k=20)
 
-    result_ids = [doc.metadata['id'] for doc in results]
-    result_data_text = data_text.loc[data_text['id'].isin(result_ids), 'text'].to_list()
-    retrieved_text = ",\n".join(result_data_text)
+#     result_ids = [doc.metadata['id'] for doc in results]
+#     result_data_text = data_text.loc[data_text['id'].isin(result_ids), 'text'].to_list()
+#     retrieved_text = ",\n".join(result_data_text)
 
-    formatted_prompt = custom_rag_prompt.format(retrieved_text=retrieved_text) 
+#     formatted_prompt = custom_rag_prompt.format(retrieved_text=retrieved_text) 
 
-    final_answer = llm.invoke([
-        SystemMessage(content=formatted_prompt),
-        HumanMessage(content=query)
-    ]) 
+#     final_answer = llm.invoke([
+#         SystemMessage(content=formatted_prompt),
+#         HumanMessage(content=query)
+#     ]) 
 
-    filter_ids = json.loads(final_answer.content)
+#     filter_ids = json.loads(final_answer.content)
 
-    data = all_data[all_data['merge_file_id'].isin(filter_ids)]
+#     data = all_data[all_data['merge_file_id'].isin(filter_ids)]
 
-    return {
-        'data': {
-            'all_data_found': data.replace([np.inf, -np.inf, np.nan], None).to_dict(orient='records')
-        }
-    }
+#     return {
+#         'data': {
+#             'all_data_found': data.replace([np.inf, -np.inf, np.nan], None).to_dict(orient='records')
+#         }
+#     }
